@@ -20,7 +20,7 @@ using namespace std;
 extern int user_id;
 extern string user_name;
 
-int login_UI_frame(const string& msg, const string& func) {
+int login_UI_frame(const string &msg, const string &func) {
     system("clear");
 
     cout << "==========================" << endl;
@@ -44,14 +44,9 @@ int login_UI_main() {
     string func = "top";
     while (true) {
         login_UI_frame(msg, func);
-        int op;
-        if (scanf("%d", &op) == 0) {
-            char temp[1024];
-            fgets(temp, 1024, stdin);
-            msg = "input format error, please input again";
-            continue;
-        }
-        if (op == 1) {
+        string op;
+        getline(cin, op);
+        if (op == "1") {
             func = "login";
             msg = "";
             // login
@@ -96,17 +91,21 @@ int login_UI_main() {
                     func = "top";
 
                 } else if (r == -1) {
-                    msg = "login failed, user not exists";
+                    printf("login failed, user not exists\n");
+                    sleep(1);
                 } else if (r == -2) {
-                    msg = "login failed, wrong password";
+                    printf("login failed, wrong password\n");
+                    sleep(1);
                 } else if (r == -3) {
-                    msg = "login failed, this user is online already";
+                    printf("login failed, this user is online already\n");
+                    sleep(1);
                 } else {
-                    msg = "login failed, server error";
+                    printf("login failed, server error\n");
+                    sleep(1);
                 }
                 break;
             }
-        } else if (op == 2) {
+        } else if (op == "2") {
             func = "register";
             msg = "";
             while (true) {
@@ -132,28 +131,35 @@ int login_UI_main() {
                 }
                 encryption(password);
                 if (register_request(username.c_str(), password.c_str()) < 0) {
-                    msg = "register failed";
+                    printf("register failed\n");
                 }
                 message *m = new message;
                 get_response(REGISTER_RESPONSE, m);
                 int r = m->get_int(STATE);
                 if (r > 0) {
-                    msg = "register successfully";
+                    printf("register successfully\n");
+                    sleep(1);
                 } else if (r == -2) {
-                    msg = "register failed, username exists";
+                    printf("register failed, username exists\n");
+                    sleep(1);
                 } else {
-                    msg = "register failed, server error";
+                    printf("register failed, server error\n");
+                    sleep(1);
                 }
                 break;
             }
 
 
-        } else if (op == 3) {
+        } else if (op == "3") {
             cout << "Thanks for using! Bye!" << endl;
             sleep(1);
             break;
+        } else if (op.empty()) {
+            msg = "Please input the number for next step";
+            continue;
         } else {
-            msg = "input out of range, please input again";
+            printf("input format error, please input again\n");
+            sleep(1);
             continue;
         }
     }

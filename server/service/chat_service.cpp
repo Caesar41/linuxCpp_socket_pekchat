@@ -1,11 +1,12 @@
 //
-// Created by kumo on 5/9/21.
+// Created by kumo on 5/11/21.
 //
 
-#include "chat_function.h"
-#include "container_client.h"
+#include "chat_service.h"
+#include "container_server.h"
 #include <time.h>
-#include "../client.h"
+#include "../data/chat_data.h"
+#include "../package/client_sock.h"
 
 /*
     int mid;
@@ -33,8 +34,16 @@ chat::chat(int s, int r, string c, int t) {
     time_s = t;
 }
 
+chat::chat(int cid, int s, int r, string c, int t) {
+    mid = cid;
+    sender = s;
+    receiver = r;
+    content = c;
+    time_s = t;
+}
+
 void chat::to_message(message *m) {
-    m->set_int(TYPE, CHAT_SEND);
+    m->set_int(TYPE, CHAT_RECV);
     m->set_int(ID_TOKEN, mid);
     m->set_int(SOURCE, sender);
     m->set_int(DESTINATION, receiver);
@@ -51,7 +60,7 @@ bool chat::operator> (const chat &c) const {
 }
 
 bool chat_order_dec (const chat &c1, const chat &c2) {
-    return c1 < c2;
+    return c1 > c2;
 }
 
 int chat::get_mid() {
@@ -72,29 +81,43 @@ string chat::get_content() {
 
 string chat::get_time() {
     struct tm *info;
-    time_t tt = (long int) time_s;
-    info = localtime(&tt);
+    info = localtime((long int *) &time_s);
     char buffer[100] = {0};
     strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", info);
     return string(buffer);
 }
 
-int send_chat(int source, int des, string content) {
-    int server_t = get_server_time();
-    chat new_chat = chat(source, des, content, server_t);
+int chat::get_time_int() {
+    return time_s;
+}
 
-    message m = message(CHAT_SEND);
-    new_chat.to_message(&m);
-
-    // add chat to map
-    add_chat(m);
-
-    client_send(&m);
+int got_chat_function(message m) {
+    // add to data
+    chat c = chat(m);
+    add_chat_to_data(c);
+    // add to cache (later, get chat id from database)
+    add_chat_to_map(c);
+    // if target online, send to him
+    int recv_id = c.get_receiver();
+    if (is_online_by_id(recv_id)) {
+        int recv_fd = get_fd_by_id(recv_id);
+        message chat_send = m;
+        chat_send.set_int(TYPE, CHAT_RECV);
+        send_by_fd(recv_fd, chat_send);
+    }
     return 0;
 }
 
-int add_chat(message m) {
-    chat c = chat(m);
-    add_chat_to_map(c);
+// by fd and uid
+int init_chat(int fd, int uid) {
+    vector<chat> chats;
+    get_chats_from_map_by_id(chats, uid);
+    auto it = chats.begin();
+    while (it != chats.end()) {
+        message chat_r = message(CHAT_RECV);
+        it->to_message(&chat_r);
+        send_by_fd(fd, chat_r);
+        it++;
+    }
     return 0;
 }

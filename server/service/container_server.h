@@ -9,6 +9,8 @@
 #include "friend_service.h"
 #include <string>
 #include <map>
+#include <vector>
+#include "chat_service.h"
 
 using namespace std;
 
@@ -19,7 +21,7 @@ int get_message(message *m);
 
 int add_message(message m);
 
-//friends
+// friends
 int add_friend_to_map(int uid, string name, bool o);
 
 int get_friends_from_map(map<int, friend_server> &m);
@@ -29,3 +31,11 @@ int friend_log_change_to_map(int uid, bool o);
 bool is_online_by_id(int uid);
 
 #endif //PEKCHAT_CONTAINERS_H
+
+// chats
+int add_chat_to_map(chat c);
+
+int add_chat_to_map(message m);
+
+int get_chats_from_map_by_id(vector<chat> &c, int uid);
+

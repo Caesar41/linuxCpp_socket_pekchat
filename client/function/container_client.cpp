@@ -102,6 +102,45 @@ int friend_log_change_to_map(int uid, bool o) {
     return 0;
 }
 
+// chat
+// key is id
+map<int, vector<chat>> chats;
+pthread_mutex_t chat_mutex;
+
+int add_chat_to_map(chat c) {
+    int tar = c.get_sender() ^ c.get_receiver() ^ user_id;
+    pthread_mutex_lock(&chat_mutex);
+    if (chats[tar].empty()) {
+        vector<chat> v = {c};
+        chats[tar] = v;
+    } else {
+        chats[tar].push_back(c);
+    }
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
+int add_chat_to_map(message m) {
+    chat c = chat(m);
+    int tar = c.get_sender() ^ c.get_receiver() ^ user_id;
+    pthread_mutex_lock(&chat_mutex);
+    if (chats[tar].empty()) {
+        vector<chat> v = {c};
+        chats[tar] = v;
+    } else {
+        chats[tar].push_back(c);
+    }
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
+int get_chats_from_map_by_id(vector<chat> &c, int uid) {
+    pthread_mutex_lock(&chat_mutex);
+    c = chats[uid];
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
 int init_containers() {
     return 0;
 }

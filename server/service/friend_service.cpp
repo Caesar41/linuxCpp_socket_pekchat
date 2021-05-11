@@ -17,7 +17,7 @@ int friend_log_change(int uid, bool o) {
     return 0;
 }
 
-// by id and uid
+// by fd and uid
 int init_friend(int fd, int uid) {
     map<int, friend_server> m;
     get_friends_from_map(m);

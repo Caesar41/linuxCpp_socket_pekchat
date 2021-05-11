@@ -14,11 +14,12 @@
 #include "../function/friend_function.h"
 #include "../function/account_function.h"
 #include "../function/chat_function.h"
+#include <algorithm>
 
 extern int user_id;
 extern string user_name;
 
-int chat_UI_frame(int tid, const string& msg, const string& func) {
+int chat_UI_frame(int tid, const string &msg, const string &func) {
     system("clear");
     friend_client target;
 
@@ -39,19 +40,28 @@ int chat_UI_frame(int tid, const string& msg, const string& func) {
         cout << "offline" << endl;
     }
     cout << "--------------------" << endl;
-    cout << "2021-09-12 11:12:00  eno" << endl;
-    cout << "  -Hello, kumo" << endl;
-    cout << "2021-09-12 11:13:05  kumo" << endl;
-    cout << "  -Hello, eno" << endl;
-    cout << "2021-09-12 11:13:20  kumo" << endl;
-    cout << "  -I love u" << endl;
-    cout << "2021-09-12 11:15:11  eno" << endl;
-    cout << "  -me too" << endl;
-    cout << "2021-09-12 11:15:33  kumo" << endl;
-    cout << "  -OOOOOOHHHHH!!!" << endl;
+    vector<chat> chats_f;
+    get_chats_from_map_by_id(chats_f, tid);
+
+    sort(chats_f.begin(), chats_f.end(), chat_order_dec);
+
+    int i = 0;
+    for (auto c : chats_f) {
+        if (i >= 10) {
+            break;
+        }
+        string sender_name;
+        if (c.get_sender() == user_id) {
+            sender_name = user_name;
+        } else if (c.get_sender() == tid) {
+            sender_name = target.get_name();
+        }
+        cout << c.get_time() << "  " << sender_name << endl << "  -" << c.get_content() << endl;
+    }
     cout << "==========================" << endl;
     cout << "  \'/h\' to see history messages" << endl;
     cout << "  \'/e\' to exit this chat room" << endl;
+    cout << "  enter to refresh the message or send message" << endl;
     cout << "==========================" << endl;
     if (!func.empty()) {
         cout << "[--" << func << "--]" << endl;
@@ -71,9 +81,7 @@ int chat_UI_main(int tid) {
         int op;
         string chat_buf;
         // char chat_buf[1024];
-        while (chat_buf.empty()) {
-            getline(cin, chat_buf);
-        }
+        getline(cin, chat_buf);
         if (chat_buf.size() >= CONTENT_LENGTH) {
             msg = "message too long";
             continue;
@@ -85,6 +93,10 @@ int chat_UI_main(int tid) {
             cout << "exit this chat room!" << endl;
             sleep(1);
             break;
+        } else if (chat_buf.empty()) {
+            msg = "Please input the message to send or the command";
+            func = "chat room";
+            continue;
         } else {
             send_chat(user_id, tid, chat_buf);
             msg = "send the message: " + string(chat_buf);

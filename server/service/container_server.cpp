@@ -9,6 +9,7 @@
 #include <semaphore.h>
 #include <cstdio>
 #include "../data/friend_data.h"
+#include "../data/chat_data.h"
 
 using namespace std;
 
@@ -86,7 +87,45 @@ int friend_log_change_to_map(int uid, bool o) {
     return 0;
 }
 
+// chat, key is id, vector has all about him(sender or receiver)
+map<int, vector<chat>> chats;
+pthread_mutex_t chat_mutex;
+
+int add_chat_to_map(chat c) {
+    pthread_mutex_lock(&chat_mutex);
+    if (chats[c.get_sender()].empty()) {
+        vector<chat> v = {c};
+        chats[c.get_sender()] = v;
+    } else {
+        chats[c.get_sender()].push_back(c);
+    }
+    if (chats[c.get_receiver()].empty()) {
+        vector<chat> v = {c};
+        chats[c.get_receiver()] = v;
+    } else {
+        chats[c.get_receiver()].push_back(c);
+    }
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
+int add_chat_to_map(message m) {
+    chat c = chat(m);
+    pthread_mutex_lock(&chat_mutex);
+    add_chat_to_map(c);
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
+int get_chats_from_map_by_id(vector<chat> &c, int uid) {
+    pthread_mutex_lock(&chat_mutex);
+    c = chats[uid];
+    pthread_mutex_unlock(&chat_mutex);
+    return 0;
+}
+
 int init_containers() {
     get_friends_from_database(users);
+    get_chats_from_database();
     return 0;
 }

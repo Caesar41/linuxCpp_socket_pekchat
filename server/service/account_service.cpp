@@ -97,7 +97,7 @@ void login_ok(message m) {
 
     init_friend(fd, id);
 
-    // init message
+    init_chat(fd, id);
 
     message response = message(INIT_COMPLETE);
 

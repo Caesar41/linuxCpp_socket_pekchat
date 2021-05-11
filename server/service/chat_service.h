@@ -1,9 +1,9 @@
 //
-// Created by kumo on 5/9/21.
+// Created by kumo on 5/11/21.
 //
 
-#ifndef PEKCHAT_CHAT_FUNCTION_H
-#define PEKCHAT_CHAT_FUNCTION_H
+#ifndef PEKCHAT_CHAT_SERVICE_H
+#define PEKCHAT_CHAT_SERVICE_H
 
 #include <string>
 #include "../package/message.h"
@@ -21,6 +21,7 @@ public:
     chat();
     chat(message m);
     chat(int s, int r, string c, int t);
+    chat(int cid, int s, int r, string c, int t);
 
     void to_message(message *m);
     int get_mid();
@@ -28,14 +29,13 @@ public:
     int get_receiver();
     string get_content();
     string get_time();
+    int get_time_int();
     bool operator< (const chat &c) const;
     bool operator> (const chat &c) const;
 };
 
-bool chat_order_dec (const chat &c1, const chat &c2);
+int got_chat_function(message m);
 
-int send_chat(int source, int des, string content);
+int init_chat(int fd, int uid);
 
-int add_chat(message m);
-
-#endif //PEKCHAT_CHAT_FUNCTION_H
+#endif //PEKCHAT_CHAT_SERVICE_H

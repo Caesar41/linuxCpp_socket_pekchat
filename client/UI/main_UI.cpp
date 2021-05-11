@@ -46,10 +46,10 @@ int main_UI_frame(const string& msg, const string& func) {
         }
         it++;
     }
-    cout << "--------------------" << endl;
-    cout << "+group:" << endl;
-    cout << "  " << "-room314" << endl;
-    cout << "  " << "-300group" << endl;
+//    cout << "--------------------" << endl;
+//    cout << "+group:" << endl;
+//    cout << "  " << "-room314" << endl;
+//    cout << "  " << "-300group" << endl;
     cout << "==========================" << endl;
     cout << "  1. chat" << endl;
     cout << "  -. group" << endl;
@@ -69,18 +69,13 @@ int main_UI_frame(const string& msg, const string& func) {
 }
 
 int main_UI_main() {
-    string msg = "Please input the number for next step";
+    string msg = "Please input the number for next step, or press enter to refresh user list";
     string func = "top";
     while (true) {
         main_UI_frame(msg, func);
-        int op;
-        if (scanf("%d", &op) == 0) {
-            char temp[1024];
-            fgets(temp, 1024, stdin);
-            msg = "input format error, please input again";
-            continue;
-        }
-        if (op == 1) {
+        string op;
+        getline(cin, op);
+        if (op == "1") {
             func = "top";
             printf("please input the friend's name to char with: ");
             string fn;
@@ -98,23 +93,30 @@ int main_UI_main() {
 
             if (fid == 0) {
                 func = "top";
-                msg = "user name not exists, enter chat room failed";
+                printf("user name not exists, enter chat room failed\n");
+                sleep(1);
                 continue;
             } else if (fid == user_id) {
                 func = "top";
-                msg = "you can't chat with yourself";
+                printf("you can't chat with yourself\n");
+                sleep(1);
                 continue;
             }
 
             chat_UI_main(fid);
 
-        } else if (op == 2) {
+        } else if (op == "2") {
             logout();
             cout << "Logout!" << endl;
             sleep(1);
             break;
-        } else {
-            msg = "input out of range, please input again";
+        } else if (op.empty()) {
+            msg = "Please input the number for next step, or press enter to refresh user list";
+            continue;
+        }
+        else {
+            printf("input format error, please input again\n");
+            sleep(1);
             continue;
         }
     }
