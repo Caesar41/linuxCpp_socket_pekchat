@@ -43,20 +43,19 @@ int chat_UI_frame(int tid, const string &msg, const string &func) {
     vector<chat> chats_f;
     get_chats_from_map_by_id(chats_f, tid);
 
+    // first is the last
     sort(chats_f.begin(), chats_f.end(), chat_order_dec);
 
-    int i = 0;
-    for (auto c : chats_f) {
-        if (i >= 10) {
-            break;
-        }
+    auto c = max(chats_f.end() - 10, chats_f.begin());
+    while (c != chats_f.end()) {
         string sender_name;
-        if (c.get_sender() == user_id) {
+        if (c->get_sender() == user_id) {
             sender_name = user_name;
-        } else if (c.get_sender() == tid) {
+        } else if (c->get_sender() == tid) {
             sender_name = target.get_name();
         }
-        cout << c.get_time() << "  " << sender_name << endl << "  -" << c.get_content() << endl;
+        cout << c->get_time() << "  " << sender_name << endl << "  -" << c->get_content() << endl;
+        c++;
     }
     cout << "==========================" << endl;
     cout << "  \'/h\' to see history messages" << endl;
@@ -87,8 +86,10 @@ int chat_UI_main(int tid) {
             continue;
         }
         if (chat_buf == "/h") {
-            func = "history";
-            msg = "now, this seem to has no effect";
+            history_UI(tid, 1);
+            msg = "Please input the message to send or the command";
+            func = "chat room";
+            continue;
         } else if (chat_buf == "/e") {
             cout << "exit this chat room!" << endl;
             sleep(1);
@@ -99,8 +100,82 @@ int chat_UI_main(int tid) {
             continue;
         } else {
             send_chat(user_id, tid, chat_buf);
-            msg = "send the message: " + string(chat_buf);
+            msg = "message sent: " + string(chat_buf);
             continue;
+        }
+    }
+    return 0;
+}
+
+
+// page start from 1
+int history_UI(int tid, int page_in) {
+    int page = page_in;
+    while (true) {
+        vector<chat> chat_his;
+        get_chats_from_map_by_id(chat_his, tid);
+
+        friend_client tar;
+        get_friend_from_map_by_id(tid, &tar);
+        system("clear");
+        cout << "==========================" << endl;
+        cout << "chatting history with " << tar.get_name() << endl;
+        cout << "--------------------" << endl;
+
+        sort(chat_his.begin(), chat_his.end(), chat_order_dec);
+
+        int page_all = (chat_his.size() + PAGE_SIZE - 1) / PAGE_SIZE;
+        int page_begin = PAGE_SIZE * (page - 1), page_end = PAGE_SIZE * page;
+        auto c_begin = max(chat_his.begin(), chat_his.end() - page_end);
+        auto c_end = chat_his.end() - page_begin;
+        while (c_begin != c_end) {
+            string sender_name;
+            if (c_begin->get_sender() == user_id) {
+                sender_name = user_name;
+            } else if (c_begin->get_sender() == tid) {
+                sender_name = tar.get_name();
+            }
+            cout << c_begin->get_time() << "  " << sender_name << endl << "  -" << c_begin->get_content() << endl;
+            c_begin++;
+        }
+        cout << "==========================" << endl;
+        cout << "  10 messages per page" << endl;
+        cout << "  \'/f\' to see the next page" << endl;
+        cout << "  \'/b\' to see the last page" << endl;
+        cout << "  \'/e\' to exit history mode" << endl;
+        cout << "  current page: " << page_all - page + 1 << ", total page: " << page_all << endl;
+        cout << "==========================" << endl;
+        cout << "[--history--]" << endl;
+        cout << "==========================" << endl;
+        string chat_buf;
+        getline(cin, chat_buf);
+
+        if (chat_buf == "/b") {
+            int new_p = page + 1;
+            if (new_p > page_all) {
+                cout << "no more page before!" << endl;
+                sleep(1);
+            } else {
+                page = new_p;
+            }
+            continue;
+        } else if (chat_buf == "/e") {
+            break;
+        } else if (chat_buf == "/f") {
+            int new_p = page - 1;
+            if (new_p <= 0) {
+                cout << "no more page after!" << endl;
+                sleep(1);
+                continue;
+            } else {
+                page = new_p;
+                continue;
+            }
+        } else if (chat_buf.empty()) {
+            continue;
+        } else {
+            cout << "wrong input!" << endl;
+            sleep(1);
         }
     }
     return 0;
