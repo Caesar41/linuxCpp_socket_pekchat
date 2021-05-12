@@ -33,8 +33,8 @@ int sql_init() {
         return -1;
     }
 
-    if (mysql_real_connect(con, "localhost", "root", "Caesar63211",
-                           "pekchat", 0, NULL, 0) == NULL)
+    if (mysql_real_connect(con, "***", "***", "***",
+                           "***", 0, NULL, 0) == NULL)
     {
         mysql_with_error("connect with database failed");
         return -1;

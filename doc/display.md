@@ -16,6 +16,10 @@
 
 ![image-20210512020855429](pic/chat_offline.png)
 
+**聊天记录**
+
+![image-20210512160710924](pic/history.png)
+
 **服务端日志**
 
 ![image-20210512015431196](pic/log.png)
